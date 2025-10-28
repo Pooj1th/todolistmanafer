@@ -1,139 +1,79 @@
+# To-Do List Manager
+# Mini Project by Poojith R
 
-from datetime import datetime, timedelta
-import json
+tasks = []
 
-FILENAME = "tasks.json"
+def show_menu():
+    print("\n=== TO-DO LIST MANAGER ===")
+    print("1. Add Task")
+    print("2. View Tasks")
+    print("3. Mark Task as Completed")
+    print("4. Delete Task")
+    print("5. Exit")
 
-def load_tasks(filename):
-    try:
-        with open(filename, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return []
+def add_task():
+    task = input("Enter a new task: ").strip()
+    if task:
+        tasks.append({"task": task, "completed": False})
+        print(f"Task '{task}' added successfully!")
+    else:
+        print("Task cannot be empty.")
 
-def save_tasks(tasks, filename):
-    with open(filename, "w") as file:
-        json.dump(tasks, file, indent=4)
-
-def add_task(tasks):
-    description = input("Enter task description: ")
-    due_date = input("Enter due date (YYYY-MM-DD) or leave blank: ")
-    task = {
-        "description": description,
-        "due_date": due_date if due_date else "None",
-        "status": "Pending"
-    }
-    tasks.append(task)
-    print("Task added successfully.")
-
-def view_tasks(tasks, filter_type=None):
+def view_tasks():
     if not tasks:
-        print("No tasks available.")
-        return
+        print("\nNo tasks found.")
+    else:
+        print("\nYour Tasks:")
+        for i, t in enumerate(tasks, start=1):
+            status = "✓ Completed" if t["completed"] else "✗ Not Completed"
+            print(f"{i}. {t['task']} — {status}")
 
-    print("\n=== TASK LIST ===")
-    today = datetime.today().date()
-    for i, task in enumerate(tasks):
-        task_due = task["due_date"]
-        task_status = task["status"]
-        show = False
+def mark_completed():
+    view_tasks()
+    if tasks:
+        try:
+            task_no = int(input("\nEnter task number to mark as completed: "))
+            if 1 <= task_no <= len(tasks):
+                tasks[task_no - 1]["completed"] = True
+                print(f"Task {task_no} marked as completed.")
+            else:
+                print("Invalid task number.")
+        except ValueError:
+            print("Please enter a valid number.")
 
-        if filter_type == "completed" and task_status == "Completed":
-            show = True
-        elif filter_type == "pending" and task_status == "Pending":
-            show = True
-        elif filter_type == "due_soon":
-            if task_due != "None":
-                try:
-                    due_date_obj = datetime.strptime(task_due, "%Y-%m-%d").date()
-                    if 0 <= (due_date_obj - today).days <= 3:
-                        show = True
-                except:
-                    pass
-        elif filter_type is None:
-            show = True
-
-        if show:
-            print(f"{i+1}. {task['description']} | Due: {task['due_date']} | Status: {task['status']}")
-
-def mark_completed(tasks):
-    view_tasks(tasks, "pending")
-    try:
-        index = int(input("Enter task number to mark as completed: ")) - 1
-        if 0 <= index < len(tasks):
-            tasks[index]["status"] = "Completed"
-            print("Task marked as completed.")
-        else:
-            print("Invalid task number.")
-    except ValueError:
-        print("Invalid input.")
-
-def edit_task(tasks):
-    view_tasks(tasks)
-    try:
-        index = int(input("Enter task number to edit: ")) - 1
-        if 0 <= index < len(tasks):
-            new_desc = input("Enter new description (leave blank to keep current): ")
-            new_due = input("Enter new due date (YYYY-MM-DD) or leave blank: ")
-            if new_desc:
-                tasks[index]["description"] = new_desc
-            if new_due:
-                tasks[index]["due_date"] = new_due
-            print("Task updated.")
-        else:
-            print("Invalid task number.")
-    except ValueError:
-        print("Invalid input.")
-
-def delete_task(tasks):
-    view_tasks(tasks)
-    try:
-        index = int(input("Enter task number to delete: ")) - 1
-        if 0 <= index < len(tasks):
-            tasks.pop(index)
-            print("Task deleted.")
-        else:
-            print("Invalid task number.")
-    except ValueError:
-        print("Invalid input.")
+def delete_task():
+    view_tasks()
+    if tasks:
+        try:
+            task_no = int(input("\nEnter task number to delete: "))
+            if 1 <= task_no <= len(tasks):
+                removed = tasks.pop(task_no - 1)
+                print(f"Task '{removed['task']}' deleted.")
+            else:
+                print("Invalid task number.")
+        except ValueError:
+            print("Please enter a valid number.")
 
 def main():
-    tasks = load_tasks(FILENAME)
     while True:
-        print("\n=== TO-DO LIST MANAGER ===")
-        print("1. Add a new task")
-        print("2. View all tasks")
-        print("3. View completed tasks")
-        print("4. View pending tasks")
-        print("5. View tasks due soon (within 3 days)")
-        print("6. Mark a task as completed")
-        print("7. Edit a task")
-        print("8. Delete a task")
-        print("9. Exit")
-
-        choice = input("Enter your choice (1-9): ")
+        show_menu()
+        choice = input("\nEnter your choice (1-5): ")
 
         if choice == "1":
-            add_task(tasks)
+            add_task()
         elif choice == "2":
-            view_tasks(tasks)
+            view_tasks()
         elif choice == "3":
-            view_tasks(tasks, "completed")
+            mark_completed()
         elif choice == "4":
-            view_tasks(tasks, "pending")
+            delete_task()
         elif choice == "5":
-            view_tasks(tasks, "due_soon")
-        elif choice == "6":
-            mark_completed(tasks)
-        elif choice == "7":
-            edit_task(tasks)
-        elif choice == "8":
-            delete_task(tasks)
-        elif choice == "9":
-            save_tasks(tasks, FILENAME)
-            print("Tasks saved. Goodbye!")
+            print("Exiting... Thank you for using To-Do List Manager!")
             break
         else:
             print("Invalid choice. Please try again.")
 
-main()
+# Run the program
+if __name__ == "__main__":
+    main()
+
